@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kelola pengguna</title>
+</head>
+<body>
+<nav aria-label="Menu Admin">
+    <a th:href="@{/}">Beranda</a> · <a th:href="@{/admin/categories}">Kelola kategori</a>
+</nav>
+<main>
+    <h1>Kelola pengguna</h1>
+    <p role="status" th:if="${sukses}" th:text="${sukses}"></p>
+    <p role="alert" th:if="${gagal}" th:text="${gagal}"></p>
+    <form method="get" th:action="@{/admin/users}">
+        <label>Cari pengguna <input type="search" name="cari" th:value="${cari}" placeholder="Username atau nama lengkap"></label>
+        <label>Urutkan berdasarkan
+            <select name="urut">
+                <option value="username">Username</option>
+                <option value="full_name" th:selected="${urut == 'full_name'}">Nama lengkap</option>
+            </select>
+        </label>
+        <label>Urutan
+            <select name="arah">
+                <option value="asc">A–Z</option>
+                <option value="desc" th:selected="${arah == 'desc'}">Z–A</option>
+            </select>
+        </label>
+        <button>Tampilkan</button>
+    </form>
+    <table aria-label="Daftar pengguna">
+        <thead><tr><th>Username</th><th>Nama lengkap</th><th>Peran</th><th>Tindakan</th></tr></thead>
+        <tbody>
+        <tr th:each="orang : ${pengguna}">
+            <td th:text="${orang.username}"></td>
+            <td th:text="${orang.full_name}"></td>
+            <td th:text="${orang.role}"></td>
+            <td>
+                <span th:if="${orang.role == 'ADMIN'}">Dilindungi</span>
+                <!-- Akun baru dihapus setelah Admin menekan tombol konfirmasi. -->
+                <details th:if="${orang.role == 'USER'}">
+                    <summary>Hapus</summary>
+                    <form method="post" th:action="@{/admin/users/{id}/hapus(id=${orang.idusr})}">
+                        <input type="hidden" name="token" th:value="${session.tokenFormAdmin}">
+                        <p th:text="|Hapus ${orang.username} beserta semua resep dan fotonya?|"></p>
+                        <button>Ya, hapus akun</button>
+                    </form>
+                </details>
+            </td>
+        </tr>
+        <tr th:if="${pengguna.isEmpty()}"><td colspan="4">Pengguna tidak ditemukan.</td></tr>
+        </tbody>
+    </table>
+    <!-- Pindah halaman tetap memakai pencarian dan urutan yang dipilih. -->
+    <nav aria-label="Halaman daftar pengguna">
+        <a th:if="${halaman > 1}" th:href="@{/admin/users(cari=${cari},urut=${urut},arah=${arah},halaman=${halaman - 1})}">Sebelumnya</a>
+        <span th:text="|Halaman ${halaman} dari ${totalHalaman}|"></span>
+        <a th:if="${halaman < totalHalaman}" th:href="@{/admin/users(cari=${cari},urut=${urut},arah=${arah},halaman=${halaman + 1})}">Berikutnya</a>
+    </nav>
+</main>
+</body>
+</html>

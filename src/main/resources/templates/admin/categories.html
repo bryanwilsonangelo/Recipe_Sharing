@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kelola kategori</title>
+    <script defer th:src="@{/js/admin-chart.js}"></script>
+</head>
+<body>
+<nav aria-label="Menu Admin">
+    <a th:href="@{/}">Beranda</a> · <a th:href="@{/admin/users}">Kelola pengguna</a>
+</nav>
+<main>
+    <h1>Kelola kategori</h1>
+    <p role="status" th:if="${sukses}" th:text="${sukses}"></p>
+    <p role="alert" th:if="${gagal}" th:text="${gagal}"></p>
+    <form method="post" th:action="@{/admin/categories/tambah}">
+        <input type="hidden" name="token" th:value="${session.tokenFormAdmin}">
+        <label>Nama kategori baru <input name="nama" required maxlength="50" pattern=".*\S.*" title="Masukkan nama kategori, maksimal 50 karakter."></label>
+        <button>Tambah kategori</button>
+    </form>
+    <h2>Daftar kategori</h2>
+    <form method="get" th:action="@{/admin/categories}">
+        <label>Cari kategori <input type="search" name="cari" th:value="${cari}"></label>
+        <label>Urutan nama
+            <select name="arah">
+                <option value="asc">A–Z</option>
+                <option value="desc" th:selected="${arah == 'desc'}">Z–A</option>
+            </select>
+        </label>
+        <button>Tampilkan</button>
+    </form>
+    <p th:if="${kategori.isEmpty()}">Kategori tidak ditemukan.</p>
+    <details th:each="item : ${kategori}">
+        <summary><span th:text="${item.name}"></span> (hapus)</summary>
+        <form method="post" th:action="@{/admin/categories/{id}/hapus(id=${item.idcat})}">
+            <input type="hidden" name="token" th:value="${session.tokenFormAdmin}">
+            <p th:text="|Hapus kategori ${item.name} dari daftar dan dari semua resep?|"></p>
+            <button>Ya, hapus kategori</button>
+        </form>
+    </details>
+    <nav aria-label="Halaman daftar kategori">
+        <a th:if="${halaman > 1}" th:href="@{/admin/categories(cari=${cari},arah=${arah},halaman=${halaman - 1})}">Sebelumnya</a>
+        <span th:text="|Halaman ${halaman} dari ${totalHalaman}|"></span>
+        <a th:if="${halaman < totalHalaman}" th:href="@{/admin/categories(cari=${cari},arah=${arah},halaman=${halaman + 1})}">Berikutnya</a>
+    </nav>
+    <section>
+        <h2>Jumlah resep per kategori</h2>
+        <p th:if="${statistik.isEmpty()}">Belum ada kategori untuk ditampilkan.</p>
+        <p th:each="item : ${statistik}">
+            <canvas width="120" height="12" aria-hidden="true" th:attr="data-jumlah=${item.jumlah}"></canvas>
+            <span th:text="|${item.name} (${item.jumlah} resep)|"></span>
+        </p>
+    </section>
+</main>
+</body>
+</html>
